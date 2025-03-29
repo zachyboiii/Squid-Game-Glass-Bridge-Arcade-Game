@@ -1,0 +1,38 @@
+module shifter (
+    input a[32],
+    input b[5],
+    input alufn[6],
+    output shift[32]
+) {
+    // SHL
+    x_bit_left_shifter shl_16(#SHIFT(16), .a(a), .shift(b[4]), .pad(0))
+    x_bit_left_shifter shl_8(#SHIFT(8), .a(shl_16.out), .shift(b[3]), .pad(0))
+    x_bit_left_shifter shl_4(#SHIFT(4), .a(shl_8.out), .shift(b[2]), .pad(0))
+    x_bit_left_shifter shl_2(#SHIFT(2), .a(shl_4.out), .shift(b[1]), .pad(0))
+    x_bit_left_shifter shl_1(#SHIFT(1), .a(shl_2.out), .shift(b[0]), .pad(0))
+    
+    // SHR
+    x_bit_right_shifter shr_16(#SHIFT(16), .a(a), .shift(b[4]), .pad(0))
+    x_bit_right_shifter shr_8(#SHIFT(8), .a(shr_16.out), .shift(b[3]), .pad(0))
+    x_bit_right_shifter shr_4(#SHIFT(4), .a(shr_8.out), .shift(b[2]), .pad(0))
+    x_bit_right_shifter shr_2(#SHIFT(2), .a(shr_4.out), .shift(b[1]), .pad(0))
+    x_bit_right_shifter shr_1(#SHIFT(1), .a(shr_2.out), .shift(b[0]), .pad(0))
+    
+    // SRA
+    x_bit_right_shifter sra_16(#SHIFT(16), .a(a), .shift(b[4]), .pad(a[31]))
+    x_bit_right_shifter sra_8(#SHIFT(8), .a(sra_16.out), .shift(b[3]), .pad(a[31]))
+    x_bit_right_shifter sra_4(#SHIFT(4), .a(sra_8.out), .shift(b[2]), .pad(a[31]))
+    x_bit_right_shifter sra_2(#SHIFT(2), .a(sra_4.out), .shift(b[1]), .pad(a[31]))
+    x_bit_right_shifter sra_1(#SHIFT(1), .a(sra_2.out), .shift(b[0]), .pad(a[31]))
+    
+    always {
+        // implement shifter unit logic here
+        
+        case (alufn[1:0]){ // checks alufn bit 1 to 0
+            b00: shift = shl_1.out
+            b01: shift = shr_1.out
+            b11: shift = sra_1.out
+            default: shift = 0
+        } 
+    } 
+}

@@ -1,0 +1,130 @@
+module alu (
+    input a[32],
+    input b[32],
+    input alufn[6],
+    output out[32],
+    output z,
+    output v,
+    output n
+) {
+    
+    adder adder(#SIZE(32))
+    compare compare
+    boolean boolean
+    shifter shifter
+    multiplier multiplier
+    divider divider
+    
+    always {
+        // implement alu logic here
+        // adder logic
+        adder.a = a
+        adder.b = b
+        adder.alufn = alufn
+        
+        // compare
+        compare.z = adder.z
+        compare.v = adder.v
+        compare.n = adder.n
+        compare.alufn = alufn
+        
+        // boolean
+        boolean.a = a
+        boolean.b = b
+        boolean.alufn = alufn
+        
+        // shifter
+        shifter.a = a
+        shifter.b = b[4:0]
+        shifter.alufn = alufn
+        
+        // multiplier
+        multiplier.a = a
+        multiplier.b = b
+        
+        // divider
+        divider.a = a
+        divider.b = b
+        
+        case(alufn){
+            b000000:
+                z = adder.z;
+                v = adder.v;
+                n = adder.n;
+                out = adder.out
+            b000001:
+                z = adder.z;
+                v = adder.v;
+                n = adder.n;
+                out = adder.out
+            b000010:
+                z = 0
+                v = 0
+                n = 0
+                out = multiplier.mul
+            b000011:
+                z = 0
+                v = 0
+                n = 0
+                out = divider.d
+            b011000:
+                z = 0
+                v = 0
+                n = 0
+                out = boolean.bool
+            b011110:
+                z = 0
+                v = 0
+                n = 0
+                out = boolean.bool
+            b010110:
+                z = 0
+                v = 0
+                n = 0
+                out = boolean.bool
+            b011010:
+                z = 0
+                v = 0
+                n = 0
+                out = boolean.bool
+            b100000:
+                z = 0
+                v = 0
+                n = 0
+                out = shifter.shift
+            b100001:
+                z = 0
+                v = 0
+                n = 0
+                out = shifter.shift
+            b100011:
+                z = 0
+                v = 0
+                n = 0
+                out = shifter.shift
+            b11001:
+                z = adder.z;
+                v = adder.v;
+                n = adder.n;
+                out=  compare.cmp
+            b110101:
+                z = adder.z;
+                v = adder.v;
+                n = adder.n;
+                out=  compare.cmp
+            b110111:
+                z = adder.z;
+                v = adder.v;
+                n = adder.n;
+                out=  compare.cmp
+            default:
+                z = 0
+                v = 0
+                n = 0
+                out = 0
+                
+        }
+       
+        
+    }
+}

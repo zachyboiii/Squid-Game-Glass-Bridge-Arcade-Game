@@ -1,0 +1,31 @@
+module adder #(
+    SIZE ~ 32 : SIZE > 1
+)(
+    input a[SIZE],
+    input b[SIZE],
+    input alufn[6], // alufn is smth like opcode that controls selector
+    output out[SIZE],
+    output z,
+    output v,
+    output n
+) {
+   
+    rca rca(#SIZE(SIZE)) // instantiate ripple carry adder
+    sig xb[SIZE]
+    
+    always {
+        // for xb[0] to xb[31]:
+        // XOR b and 
+        xb[SIZE-1:0] = b ^ SIZEx{alufn[0]} 
+        rca.a = a
+        rca.b = xb
+        rca.cin = alufn[0]
+        
+        // implement adder/subtractor unit logic here
+        out = rca.s
+        z = ~| rca.s
+        v = (a[SIZE-1] & xb[SIZE-1]& ~rca.s[SIZE-1]) | (~a[SIZE-1] & ~xb[SIZE-1]& rca.s[SIZE-1])
+        n = rca.s[SIZE-1] // MSB of sum
+        
+    }
+}
