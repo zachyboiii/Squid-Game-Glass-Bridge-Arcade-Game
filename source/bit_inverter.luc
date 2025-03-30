@@ -1,0 +1,19 @@
+module bit_inverter (
+    input a[8],  // clock
+    input binary_index[4],  // reset
+    output out[1]
+) {
+    
+    
+    sig i[4]
+    
+    
+    always {
+        
+        
+        i= binary_index
+        
+        out = ~a[i]
+        
+    }
+}

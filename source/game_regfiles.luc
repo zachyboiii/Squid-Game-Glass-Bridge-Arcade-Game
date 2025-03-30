@@ -24,7 +24,6 @@ module game_regfiles (
         .rst(rst) {
             // Registers using Lucid-style initialization
             dff safe_path[8](#INIT(0))
-            dff random_path[32](#INIT(0))
             dff easy_btn[1](#INIT(0))
             dff med_btn[1](#INIT(0))
             dff hard_btn[1](#INIT(0))
@@ -47,63 +46,60 @@ module game_regfiles (
         if (we) {
             case (wa) {
                 d0:  safe_path.d = data[7:0]
-                d1:  random_path.d = data
-                d2:  easy_btn.d = data[0]
-                d3:  med_btn.d = data[0]
-                d4:  hard_btn.d = data[0]
-                d5:  current_timer.d = data
-                d6:  timer_done.d = data[0]
-                d7:  left_choices.d = data[7:0]
-                d8:  left_btn.d = data[0]
-                d9:  right_choices.d = data[7:0]
-                d10: right_btn.d = data[0]
-                d11: current_step.d = data[3:0]
-                d12: right_correct.d = data[0]
-                d13: left_correct.d = data[0]
-                d14: game_won.d = data[0]
-                d15: start_btn.d = data[0]
+                d1:  easy_btn.d = data[0]
+                d2:  med_btn.d = data[0]
+                d3:  hard_btn.d = data[0]
+                d4:  current_timer.d = data
+                d5:  timer_done.d = data[0]
+                d6:  left_choices.d = data[7:0]
+                d7:  left_btn.d = data[0]
+                d8:  right_choices.d = data[7:0]
+                d9: right_btn.d = data[0]
+                d10: current_step.d = data[3:0]
+                d11: right_correct.d = data[0]
+                d12: left_correct.d = data[0]
+                d13: game_won.d = data[0]
+                d14: start_btn.d = data[0]
             }
         }
 
         // Read port 1 logic
         case (ra1) {
-            d0:  rd1 = {24b0, safe_path.q}
-            d1:  rd1 = random_path.q
-            d2:  rd1 = {31b0, easy_btn.q}
-            d3:  rd1 = {31b0, med_btn.q}
-            d4:  rd1 = {31b0, hard_btn.q}
-            d5:  rd1 = current_timer.q
-            d6:  rd1 = {31b0, timer_done.q}
-            d7:  rd1 = {24b0, left_choices.q}
-            d8:  rd1 = {31b0, left_btn.q}
-            d9:  rd1 = {24b0, right_choices.q}
-            d10: rd1 = {31b0, right_btn.q}
-            d11: rd1 = {28b0, current_step.q}
-            d12: rd1 = {31b0, right_correct.q}
-            d13: rd1 = {31b0, left_correct.q}
-            d14: rd1 = {31b0, game_won.q}
-            d15: rd1 = {31b0, start_btn.q}
+            d0:  rd1 = c{24b0, safe_path.q}
+            d1:  rd1 = c{31b0, easy_btn.q}
+            d2:  rd1 = c{31b0, med_btn.q}
+            d3:  rd1 = c{31b0, hard_btn.q}
+            d4:  rd1 = current_timer.q
+            d5:  rd1 = c{31b0, timer_done.q}
+            d6:  rd1 = c{24b0, left_choices.q}
+            d7:  rd1 = c{31b0, left_btn.q}
+            d8:  rd1 = c{24b0, right_choices.q}
+            d9: rd1 = c{31b0, right_btn.q}
+            d10: rd1 = c{28b0, current_step.q}
+            d11: rd1 = c{31b0, right_correct.q}
+            d12: rd1 = c{31b0, left_correct.q}
+            d13: rd1 = c{31b0, game_won.q}
+            d14: rd1 = c{31b0, start_btn.q}
             default: rd1 = 32b0
         }
 
         // Read port 2 logic (identical to read port 1)
         case (ra2) {
-            d0:  rd2 = {24b0, safe_path.q}
-            d1:  rd2 = random_path.q
-            d2:  rd2 = {31b0, easy_btn.q}
-            d3:  rd2 = {31b0, med_btn.q}
-            d4:  rd2 = {31b0, hard_btn.q}
-            d5:  rd2 = current_timer.q
-            d6:  rd2 = {31b0, timer_done.q}
-            d7:  rd2 = {24b0, left_choices.q}
-            d8:  rd2 = {31b0, left_btn.q}
-            d9:  rd2 = {24b0, right_choices.q}
-            d10: rd2 = {31b0, right_btn.q}
-            d11: rd2 = {28b0, current_step.q}
-            d12: rd2 = {31b0, right_correct.q}
-            d13: rd2 = {31b0, left_correct.q}
-            d14: rd2 = {31b0, game_won.q}
-            d15: rd2 = {31b0, start_btn.q}
+            d0:  rd2 = c{24b0, safe_path.q}
+            d1:  rd2 = c{31b0, easy_btn.q}
+            d2:  rd2 = c{31b0, med_btn.q}
+            d3:  rd2 = c{31b0, hard_btn.q}
+            d4:  rd2 = current_timer.q
+            d5:  rd2 = c{31b0, timer_done.q}
+            d6:  rd2 = c{24b0, left_choices.q}
+            d7:  rd2 = c{31b0, left_btn.q}
+            d8:  rd2 = c{24b0, right_choices.q}
+            d9: rd2 = c{31b0, right_btn.q}
+            d10: rd2 = c{28b0, current_step.q}
+            d11: rd2 = c{31b0, right_correct.q}
+            d12: rd2 = c{31b0, left_correct.q}
+            d13: rd2 = c{31b0, game_won.q}
+            d14: rd2 = c{31b0, start_btn.q}
             default: rd2 = 32b0
         }
 

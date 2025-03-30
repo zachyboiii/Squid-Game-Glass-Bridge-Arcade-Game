@@ -1,0 +1,284 @@
+module game_cu (
+    input clk,  // clock
+    input rst,  // reset
+    input decrease_timer,
+    input regfile_rd2[32],
+    
+    input start_btn,
+    input easy_btn,
+    input med_btn,
+    input hard_btn,
+    input left_btn,
+    input right_btn,
+    
+    output alufn[6],
+    output asel[3],
+    output bsel[3],
+    output wdsel[2],
+    output regfile_wa[4],
+    output regfile_ra1[4],
+    output regfile_ra2[4],
+    output regfile_we,
+    output debug[4]
+) {
+    enum GameStates {
+        START,
+        RANDOM_SAFE_PATH,
+        SET_TIMER,
+        IDLE,
+        DIV_TIMER,
+        MUL_TIMER,
+        INIT_LEFT,
+        INIT_RIGHT,
+        INIT_STEP,
+        INV_LEFT,
+        INV_RIGHT,
+        GET_SAFE_TILE_L,
+        GET_SAFE_TILE_R,
+        CHECK_LEFT,
+        CHECK_RIGHT,
+        BRANCH_LEFT_CORRECT,
+        BRANCH_RIGHT_CORRECT,
+        INC_STEP,
+        CHECK_STEP,
+        BRANCH_STEP,
+        CHECK_TIMER,
+        BRANCH_TIMER,
+        DEC_TIMER,
+        WIN,
+        LOSE
+    }
+    
+    dff game_fsm[$width(GameStates)](#INIT(GameStates.START), .clk(clk), .rst(rst))
+    sig game_setup
+    sig current_step
+    
+    always {
+        // standard setting unless otherwise overwritten by each case 
+        alufn = 0
+        asel = 0 
+        bsel = 0
+        regfile_we = 0
+        regfile_wa = d0 
+        regfile_ra1 = d0
+        regfile_ra2 = d0
+        wdsel = 0
+        game_setup = 1
+        current_step = 0
+        
+        debug = b0000
+        
+        
+        game_fsm.d = game_fsm.q
+        if (rst){
+            game_fsm.d = GameStates.START
+        }
+        else{
+            case(game_fsm.q){
+                GameStates.START:
+                    if(start_btn){
+                    game_fsm.d = GameStates.RANDOM_SAFE_PATH
+                    }else{
+                    game_fsm.d = GameStates.START
+                    }
+                GameStates.RANDOM_SAFE_PATH:
+                    alufn = b011010 // "A"
+                    asel = b011 // read output of random_number_generator
+                    regfile_we = 1
+                    regfile_wa = d0 // safe path reg
+                    game_fsm.d = GameStates.SET_TIMER
+                GameStates.SET_TIMER:
+                    alufn = b011010 // "A"
+                    asel = b100 // constant 30
+                    regfile_we = 1
+                    regfile_wa = d4 // store in timer reg
+                    game_fsm.d = GameStates.IDLE
+                GameStates.IDLE:
+                    if(game_setup){
+                        if(med_btn){
+                            game_fsm.d = GameStates.INIT_LEFT
+                            game_setup = 0
+                        } else if (hard_btn){
+                            game_fsm.d = GameStates.DIV_TIMER
+                        } else if(easy_btn){
+                            game_fsm.d = GameStates.MUL_TIMER
+                        }
+                    } 
+                    else{
+                        if(decrease_timer){
+                            game_fsm.d = GameStates.CHECK_TIMER
+                        } else if(right_btn && ~left_btn){
+                            game_fsm.d = GameStates.INV_RIGHT
+                        } else if(left_btn && ~right_btn){
+                            game_fsm.d = GameStates.INV_LEFT
+                        } else{
+                            game_fsm.d = GameStates.IDLE
+                        }
+                    }
+                GameStates.DIV_TIMER:
+                    alufn = b000011 // DIV
+                    asel = b000 // asel input from timer reg
+                    bsel = b011
+                    regfile_we = 1
+                    regfile_ra1 = d4 // read from timer reg
+                    regfile_wa = d4 // store result back in timer reg
+                    game_setup = 0
+                    game_fsm.d = GameStates.INIT_LEFT
+                GameStates.DIV_TIMER:
+                    alufn = b000010 // MUL
+                    asel = b000 // asel input from timer reg
+                    bsel = b011
+                    regfile_we = 1
+                    regfile_ra1 = d4 // read from timer reg
+                    regfile_wa = d4 // store result back in timer reg
+                    game_setup = 0
+                    game_fsm.d = GameStates.INIT_LEFT
+                GameStates.INIT_LEFT:
+                    alufn = b011010 // "A"
+                    asel = b001 // 8b0
+                    regfile_we = 1
+                    regfile_wa = d5 // left choices reg
+                    game_fsm.d = GameStates.INIT_RIGHT
+                GameStates.INIT_RIGHT:
+                    alufn = b011010 // "A"
+                    asel = b010 // 8b1
+                    regfile_we = 1
+                    regfile_wa = d6 // right choices reg
+                    game_fsm.d = GameStates.INIT_STEP
+                GameStates.INIT_STEP:
+                    alufn = b011010 // "A"
+                    asel = b001 // 8b1
+                    regfile_we = 1
+                    regfile_wa = d7 // current step reg
+                    game_fsm.d = GameStates.IDLE
+                GameStates.CHECK_TIMER:
+                    alufn = b110011 // CMPEQ
+                    asel = b000 // timer reg
+                    bsel = b001 // constant 0
+                    regfile_we = 1 
+                    regfile_ra1 = d4 // timer reg
+                    regfile_wa = d8 // temp reg
+                    game_fsm.d = GameStates.BRANCH_TIMER
+                GameStates.BRANCH_TIMER:
+                    regfile_ra2 = d8
+                    if(~regfile_rd2[0]){ // if timer is not 0
+                        game_fsm.d = GameStates.DEC_TIMER
+                    }
+                    else{
+                        game_fsm.d = GameStates.LOSE
+                    }
+                GameStates.DEC_TIMER:
+                    alufn = b000001 //SUB
+                    regfile_ra1 = d4 //timer reg
+                    asel = b000 
+                    bsel = b010 //constant 1
+                    regfile_we = 1
+                    regfile_wa = d4
+                    game_fsm.d = GameStates.IDLE
+                GameStates.INV_LEFT:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d5 // left choices reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d1 // left_choice[current_step] reg
+                    game_fsm.d = GameStates.GET_SAFE_TILE_L
+                GameStates.INV_RIGHT:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d6 // right choices reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d2 // right_choices[current_step] reg
+                    game_fsm.d = GameStates.GET_SAFE_TILE_R
+                GameStates.GET_SAFE_TILE_L:
+                    alufn = b010101 // bit buffer
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d0 // safe path reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d3 // safe_path[current_step] reg
+                    game_fsm.d = GameStates.CHECK_LEFT
+                GameStates.GET_SAFE_TILE_R:
+                    alufn = b010101 // bit buffer
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d0 // safe path reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d3 // safe_path[current_step] reg
+                    game_fsm.d = GameStates.CHECK_RIGHT
+                GameStates.CHECK_LEFT:
+                    alufn = b110011 // CMPEQ
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d1 // left_choice[current_step] reg
+                    regfile_ra2 = d3 // safe_path[current_step] reg
+                    regfile_we = 1
+                    regfile_wa = d9 // temp reg
+                    game_fsm.d = GameStates.BRANCH_LEFT_CORRECT
+                GameStates.CHECK_RIGHT:
+                    alufn = b110011 // CMPEQ
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d2 // right_choice[current_step] reg
+                    regfile_ra2 = d3 // safe_path[current_step] reg
+                    regfile_we = 1
+                    regfile_wa = d9 // temp reg
+                    game_fsm.d = GameStates.BRANCH_RIGHT_CORRECT
+                GameStates.BRANCH_LEFT_CORRECT:
+                    regfile_ra2 = d9 // temp reg
+                    if(regfile_rd2[0]){
+                        game_fsm.d = GameStates.INC_STEP
+                    }
+                    else{
+                    game_fsm.d = GameStates.INIT_LEFT
+                    }
+                GameStates.BRANCH_RIGHT_CORRECT:
+                    regfile_ra2 = d9 // temp reg
+                    if(regfile_rd2[0]){
+                        game_fsm.d = GameStates.INC_STEP
+                    }
+                    else{
+                    game_fsm.d = GameStates.INIT_LEFT
+                    }
+                GameStates.INC_STEP:
+                    alufn = b000000 // ADD
+                    asel = b000
+                    bsel = b001
+                    regfile_we = 1
+                    regfile_ra1 = d7
+                    regfile_wa = d7
+                    game_fsm.d = GameStates.CHECK_STEP
+                GameStates.CHECK_STEP:
+                    alufn = b110011 // CMPEQ
+                    asel = b000
+                    bsel = b100
+                    regfile_we = 1
+                    regfile_ra1 = d7
+                    regfile_wa = d9
+                    game_fsm.d = GameStates.BRANCH_STEP
+                GameStates.BRANCH_STEP:
+                    regfile_ra2 = d9
+                    if(~regfile_rd2){
+                        game_fsm.d = GameStates.IDLE
+                    }
+                    else{
+                        game_fsm.d = GameStates.WIN
+                    }
+                GameStates.WIN:
+                    wdsel = b01
+                    game_fsm.d = GameStates.START
+                GameStates.LOSE:
+                    wdsel = b10
+                    game_fsm.d = GameStates.START
+            }
+           
+        }
+        
+        
+    }
+}

@@ -14,6 +14,8 @@ module alu (
     shifter shifter
     multiplier multiplier
     divider divider
+    bit_inverter bit_inverter
+    bit_equals bit_buffer
     
     always {
         // implement alu logic here
@@ -46,77 +48,97 @@ module alu (
         divider.a = a
         divider.b = b
         
+        // bit inverter
+        bit_inverter.a = a[7:0]
+        bit_inverter.binary_index = b[3:0]
+        
+        // bit buffer
+        bit_buffer.a = a[7:0]
+        bit_buffer.binary_index = b[3:0]
+        
+        
         case(alufn){
-            b000000:
+            b000000: // ADD
                 z = adder.z;
                 v = adder.v;
                 n = adder.n;
                 out = adder.out
-            b000001:
+            b000001: // SUB
                 z = adder.z;
                 v = adder.v;
                 n = adder.n;
                 out = adder.out
-            b000010:
+            b000010: // MUL
                 z = 0
                 v = 0
                 n = 0
                 out = multiplier.mul
-            b000011:
+            b000011: // DIV
                 z = 0
                 v = 0
                 n = 0
                 out = divider.d
-            b011000:
+            b011000: // AND
                 z = 0
                 v = 0
                 n = 0
                 out = boolean.bool
-            b011110:
+            b011110: // OR
                 z = 0
                 v = 0
                 n = 0
                 out = boolean.bool
-            b010110:
+            b010110: // XOR
                 z = 0
                 v = 0
                 n = 0
                 out = boolean.bool
-            b011010:
+            b011010: // "A"
                 z = 0
                 v = 0
                 n = 0
                 out = boolean.bool
-            b100000:
+            b100000: // SHL
                 z = 0
                 v = 0
                 n = 0
                 out = shifter.shift
-            b100001:
+            b100001: // SHR
                 z = 0
                 v = 0
                 n = 0
                 out = shifter.shift
-            b100011:
+            b100011: // SRA
                 z = 0
                 v = 0
                 n = 0
                 out = shifter.shift
-            b11001:
+            b110011: // CMPEQ
                 z = adder.z;
                 v = adder.v;
                 n = adder.n;
                 out=  compare.cmp
-            b110101:
+            b110101: // CMPLT
                 z = adder.z;
                 v = adder.v;
                 n = adder.n;
                 out=  compare.cmp
-            b110111:
+            b110111: // CMPLE
                 z = adder.z;
                 v = adder.v;
                 n = adder.n;
                 out=  compare.cmp
+            b101010: // bit inverter
+                z = 0
+                v = 0
+                n = 0
+                out = bit_inverter.out
+            b010101: // bit buffer
+                z = 0
+                v = 0
+                n = 0
+                out = bit_buffer.out
+                
             default:
                 z = 0
                 v = 0
