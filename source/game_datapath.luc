@@ -29,6 +29,7 @@ module game_datapath#(
     
 
     alu game_alu
+    pn_gen random(.clk(clk), .rst(rst), .next(1), .seed(6781203480))
 
 
     .clk(clk){
@@ -68,7 +69,7 @@ module game_datapath#(
             b000: input_alu_a = game_regfiles.rd1       // From regfile
             b001: input_alu_a = 0  // constant 0 8b0
             b010: input_alu_a = 1  // constant 1 8b1
-            //b011: input_alu_a = 
+            b011: input_alu_a = random.num
             b100: input_alu_a = 30 // constant 30 (0x1E) 
             // b011 to call random number 
             default: //b10 unused
