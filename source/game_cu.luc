@@ -94,8 +94,10 @@ module game_cu (
                     regfile_wa = d4 // store in timer reg
                     game_fsm.d = GameStates.IDLE
                 GameStates.IDLE:
-                    if(game_setup){
-                        if(med_btn){
+                    // if game is in setup mode
+                    // check for difficulty button presses
+                    if(game_setup){ 
+                        if(med_btn){ 
                             game_fsm.d = GameStates.INIT_LEFT
                             game_setup = 0
                         } else if (hard_btn){
@@ -104,6 +106,8 @@ module game_cu (
                             game_fsm.d = GameStates.MUL_TIMER
                         }
                     } 
+                    // if not, check for decreasing of timer
+                    // and left right button presses
                     else{
                         if(decrease_timer){
                             game_fsm.d = GameStates.CHECK_TIMER
@@ -118,16 +122,16 @@ module game_cu (
                 GameStates.DIV_TIMER:
                     alufn = b000011 // DIV
                     asel = b000 // asel input from timer reg
-                    bsel = b011
+                    bsel = b011 // constant 2
                     regfile_we = 1
                     regfile_ra1 = d4 // read from timer reg
                     regfile_wa = d4 // store result back in timer reg
                     game_setup = 0
                     game_fsm.d = GameStates.INIT_LEFT
-                GameStates.DIV_TIMER:
+                GameStates.MUL_TIMER:
                     alufn = b000010 // MUL
                     asel = b000 // asel input from timer reg
-                    bsel = b011
+                    bsel = b011 // constant 2
                     regfile_we = 1
                     regfile_ra1 = d4 // read from timer reg
                     regfile_wa = d4 // store result back in timer reg

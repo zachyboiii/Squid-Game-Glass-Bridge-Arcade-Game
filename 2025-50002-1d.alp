@@ -184,6 +184,12 @@
                     "type": "DiskFile",
                     "path": "source/bit_equals.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/game_datapath.luc"
+                }
             }
         ],
         "constraintFiles": [

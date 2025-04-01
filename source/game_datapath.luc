@@ -1,0 +1,116 @@
+module game_datapath#(
+    SLOW_CLOCK_DIV ~ 26 : SLOW_CLOCK_DIV > 0 // Control timer tick(SLOW_CLK)
+)( 
+    input start_btn,
+    input easy_btn,
+    input med_btn, 
+    input hard_btn,
+    input left_btn,
+    input right_btn,  // All buttons
+
+    input clk,  // clock
+    input rst,  // reset
+
+    // output to LEDs/7-segs
+    output timer_out[32],
+    output left_choices_out[8],
+    output right_choices_out[8],
+    output safe_path_out[8],
+    output timer_done_out, 
+    output current_step_out[4],
+    output debug[4]
+) {
+    // temp variables 
+    sig input_alu_a[32]
+    sig input_alu_b[32]
+    sig randon_num[32]
+    sig generate_random 
+    
+    
+
+    alu game_alu
+
+
+    .clk(clk){
+ 
+        counter game_timer_clock(#SIZE(1),#DIV(SLOW_CLOCK_DIV),.rst(rst)) //slow 1-bit counter tick once per second
+        edge_detector edge_detector_game_timer(#RISE(1), #FALL(0), .in(game_timer_clock.value)) // Outputs 1 only when game_timer transition from 0--> 1
+        
+        // Control Unit FSM generating all control signals 
+        game_cu game_cu(
+            .start_btn(start_btn),
+            .easy_btn(easy_btn),
+            .med_btn(med_btn),
+            .hard_btn(hard_btn),
+            .left_btn(left_btn),
+            .right_btn(right_btn),
+            .rst(rst),
+            .decrease_timer(edge_detector_game_timer.out)
+            
+        )
+        
+        game_regfiles game_regfiles(
+            .we(game_cu.regfile_we),
+            .wa(game_cu.regfile_wa),
+            .ra1(game_cu.regfile_ra1),
+            .ra2(game_cu.regfile_ra2),
+            .rst(rst)
+        )
+       
+    }
+    
+    always{
+        // bootstrap rd2 output to CU for convenient branching conditions
+        game_cu.regfile_rd2  = game_regfiles.rd2   
+        
+        // asel mux
+        case(game_cu.asel){
+            b000: input_alu_a = game_regfiles.rd1       // From regfile
+            b001: input_alu_a = 0  // constant 0 8b0
+            b010: input_alu_a = 1  // constant 1 8b1
+            //b011: input_alu_a = 
+            b100: input_alu_a = 30 // constant 30 (0x1E) 
+            // b011 to call random number 
+            default: //b10 unused
+                input_alu_a = 0  
+            
+        }
+        // bsel mux
+        case(game_cu.bsel){
+            b000: input_alu_b = game_regfiles.rd2 
+            b001: input_alu_b = 0 // Constant 0 
+            b010: input_alu_b = 1 // Constant 1 
+            b011: input_alu_b = 2 // Constant 2 
+            b100: input_alu_b = 8 // Constant 8 
+            default: 
+                input_alu_b = 0 
+                      
+        }
+        
+        // alu (Feed A,B and selected alufn into ALU)
+        game_alu.a = input_alu_a 
+        game_alu.b = input_alu_b 
+        game_alu.alufn = game_cu.alufn
+        
+        //wdsel mux 
+        case(game_cu.wdsel){
+            b01: game_regfiles.data = hF // Win indiciator
+            b10: game_regfiles.data = 0 // Losing indicator 
+            default: 
+                game_regfiles.data = game_alu.out
+        }
+        
+        // Wired from REG file and control unit to output ports
+        timer_out = game_regfiles.timer_out 
+        left_choices_out = game_regfiles.left_choices_out
+        right_choices_out = game_regfiles.right_choices_out
+        safe_path_out = game_regfiles.safe_path_out
+        timer_done_out = game_regfiles.timer_done_out
+        current_step_out = game_regfiles.current_step_out 
+        
+        debug = game_cu.debug
+        
+        
+        
+    }
+}
