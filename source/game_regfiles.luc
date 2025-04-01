@@ -1,115 +1,95 @@
 module game_regfiles (
-    input clk,           // clock
-    input rst,           // reset
-    input wa[3],         // write address
-    input we,            // write enable
-    input data[32],      // data in
+  input clk,
+  input rst,
+  input wa[4],
+  input we,
+  input data[32],
+  input ra1[4],
+  input ra2[4],
+  output rd1[32],
+  output rd2[32],
 
-    input ra1[3],        // read address port 1
-    input ra2[3],        // read address port 2
-    output rd1[32],      // read data port 1
-    output rd2[32],      // read data port 2
-
-    // state outputs
-    output safe_path_out[8],
-    output timer_out[32],
-    output left_choices_out[8],
-    output right_choices_out[8],
-    output current_step_out[4],
-    output game_won_out,
-    output timer_done_out
+  // Outputs
+  output safe_path_out[8],
+  output timer_out[32],
+  output left_choices_out[8],
+  output right_choices_out[8],
+  output current_step_out[4],
+  output timer_done_out
 ) {
-    // Register declarations with clock and reset context
-    .clk(clk) {
-        .rst(rst) {
-            // Registers using Lucid-style initialization
-            dff safe_path[8](#INIT(0))
-            dff easy_btn[1](#INIT(0))
-            dff med_btn[1](#INIT(0))
-            dff hard_btn[1](#INIT(0))
-            dff current_timer[32](#INIT(0))
-            dff timer_done[1](#INIT(0))
-            dff left_choices[8](#INIT(0))
-            dff left_btn[1](#INIT(0))
-            dff right_choices[8](#INIT(0))
-            dff right_btn[1](#INIT(0))
-            dff current_step[4](#INIT(0))
-            dff right_correct[1](#INIT(0))
-            dff left_correct[1](#INIT(0))
-            dff game_won[1](#INIT(0))
-            dff start_btn[1](#INIT(0))
-        }
+
+  .clk(clk) {
+    .rst(rst) {
+      dff safe_path[8](#INIT(0))         // R0
+      dff left_choice_bit[1](#INIT(0))   // R1
+      dff right_choice_bit[1](#INIT(0))  // R2
+      dff safe_path_bit[1](#INIT(0))     // R3
+      dff timer[32](#INIT(0))            // R4
+      dff left_choices[8](#INIT(0))      // R5
+      dff right_choices[8](#INIT(0))     // R6
+      dff current_step[4](#INIT(0))      // R7
+      dff temp_a[32](#INIT(0))           // R8
+      dff temp_b[32](#INIT(0))           // R9
+      dff timer_done[1](#INIT(0))        // R10 
+    }
+  }
+
+  always {
+    // Write
+    if (we) {
+      case (wa) {
+        4b0000:  safe_path.d = data[7:0];
+        4b0001:  left_choice_bit.d = data[0];
+        4b0010:  right_choice_bit.d = data[0];
+        4b0011:  safe_path_bit.d = data[0];
+        4b0100:  timer.d = data;
+        4b0101:  left_choices.d = data[7:0];
+        4b0110:  right_choices.d = data[7:0];
+        4b0111:  current_step.d = data[3:0];
+        4b1000:  temp_a.d = data;
+        4b1001:  temp_b.d = data;
+        4b1010:  timer_done.d = data[0];
+      }
     }
 
-    always {
-        // Write port logic
-        if (we) {
-            case (wa) {
-                d0:  safe_path.d = data[7:0]
-                d1:  easy_btn.d = data[0]
-                d2:  med_btn.d = data[0]
-                d3:  hard_btn.d = data[0]
-                d4:  current_timer.d = data
-                d5:  timer_done.d = data[0]
-                d6:  left_choices.d = data[7:0]
-                d7:  left_btn.d = data[0]
-                d8:  right_choices.d = data[7:0]
-                d9: right_btn.d = data[0]
-                d10: current_step.d = data[3:0]
-                d11: right_correct.d = data[0]
-                d12: left_correct.d = data[0]
-                d13: game_won.d = data[0]
-                d14: start_btn.d = data[0]
-            }
-        }
-
-        // Read port 1 logic
-        case (ra1) {
-            d0:  rd1 = c{24b0, safe_path.q}
-            d1:  rd1 = c{31b0, easy_btn.q}
-            d2:  rd1 = c{31b0, med_btn.q}
-            d3:  rd1 = c{31b0, hard_btn.q}
-            d4:  rd1 = current_timer.q
-            d5:  rd1 = c{31b0, timer_done.q}
-            d6:  rd1 = c{24b0, left_choices.q}
-            d7:  rd1 = c{31b0, left_btn.q}
-            d8:  rd1 = c{24b0, right_choices.q}
-            d9: rd1 = c{31b0, right_btn.q}
-            d10: rd1 = c{28b0, current_step.q}
-            d11: rd1 = c{31b0, right_correct.q}
-            d12: rd1 = c{31b0, left_correct.q}
-            d13: rd1 = c{31b0, game_won.q}
-            d14: rd1 = c{31b0, start_btn.q}
-            default: rd1 = 32b0
-        }
-
-        // Read port 2 logic (identical to read port 1)
-        case (ra2) {
-            d0:  rd2 = c{24b0, safe_path.q}
-            d1:  rd2 = c{31b0, easy_btn.q}
-            d2:  rd2 = c{31b0, med_btn.q}
-            d3:  rd2 = c{31b0, hard_btn.q}
-            d4:  rd2 = current_timer.q
-            d5:  rd2 = c{31b0, timer_done.q}
-            d6:  rd2 = c{24b0, left_choices.q}
-            d7:  rd2 = c{31b0, left_btn.q}
-            d8:  rd2 = c{24b0, right_choices.q}
-            d9: rd2 = c{31b0, right_btn.q}
-            d10: rd2 = c{28b0, current_step.q}
-            d11: rd2 = c{31b0, right_correct.q}
-            d12: rd2 = c{31b0, left_correct.q}
-            d13: rd2 = c{31b0, game_won.q}
-            d14: rd2 = c{31b0, start_btn.q}
-            default: rd2 = 32b0
-        }
-
-        // Output assignments
-        safe_path_out = safe_path.q
-        timer_out = current_timer.q
-        left_choices_out = left_choices.q
-        right_choices_out = right_choices.q
-        current_step_out = current_step.q
-        game_won_out = game_won.q
-        timer_done_out = timer_done.q
+    // Read Port 1
+    case (ra1) {
+      4b0000:  rd1 = c{24b0, safe_path.q};
+      4b0001:  rd1 = c{31b0, left_choice_bit.q};
+      4b0010:  rd1 = c{31b0, right_choice_bit.q};
+      4b0011:  rd1 = c{31b0, safe_path_bit.q};
+      4b0100:  rd1 = timer.q;
+      4b0101:  rd1 = c{24b0, left_choices.q};
+      4b0110:  rd1 = c{24b0, right_choices.q};
+      4b0111:  rd1 = c{28b0, current_step.q};
+      4b1000:  rd1 = temp_a.q;
+      4b1001:  rd1 = temp_b.q;
+      4b1010:  rd1 = c{31b0, timer_done.q};
+      default: rd1 = 32b0;
     }
+
+    // Read Port 2
+    case (ra2) {
+      4b0000:  rd2 = c{24b0, safe_path.q};
+      4b0001:  rd2 = c{31b0, left_choice_bit.q};
+      4b0010:  rd2 = c{31b0, right_choice_bit.q};
+      4b0011:  rd2 = c{31b0, safe_path_bit.q};
+      4b0100:  rd2 = timer.q;
+      4b0101:  rd2 = c{24b0, left_choices.q};
+      4b0110:  rd2 = c{24b0, right_choices.q};
+      4b0111:  rd2 = c{28b0, current_step.q};
+      4b1000:  rd2 = temp_a.q;
+      4b1001:  rd2 = temp_b.q;
+      4b1010:  rd2 = c{31b0, timer_done.q};
+      default: rd2 = 32b0;
+    }
+
+    // Output assignments
+    safe_path_out = safe_path.q;
+    timer_out = timer.q;
+    left_choices_out = left_choices.q;
+    right_choices_out = right_choices.q;
+    current_step_out = current_step.q;
+    timer_done_out = timer_done.q;
+  }
 }
