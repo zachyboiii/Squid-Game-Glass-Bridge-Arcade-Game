@@ -12,11 +12,11 @@ module game_datapath#(
     input rst,  // reset
 
     // output to LEDs/7-segs
-    output timer_out[32],
+    output timer_out[16],
     output left_choices_out[8],
     output right_choices_out[8],
     output safe_path_out[8],
-    output timer_done_out, 
+    //output timer_done_out, 
     output current_step_out[4],
     output debug[4]
 ) {
@@ -95,18 +95,26 @@ module game_datapath#(
         
         //wdsel mux 
         case(game_cu.wdsel){
-            b01: game_regfiles.data = hF // Win indiciator
+            b00: 
+                 game_regfiles.data = game_alu.out 
+                 timer_out = game_regfiles.timer_out
+            b01: 
+                game_regfiles.data = hF // Win indiciator 
+                timer_out = d88 // Win show 88 
             b10: game_regfiles.data = d0 // Losing indicator 
+                timer_out = d00 // Lose show 00 
             default: 
                 game_regfiles.data = game_alu.out
+                timer_out = game_regfiles.timer_out
         }
         
         // Wired from REG file and control unit to output ports
-        timer_out = game_regfiles.timer_out 
+
+        
         left_choices_out = game_regfiles.left_choices_out
         right_choices_out = game_regfiles.right_choices_out
         safe_path_out = game_regfiles.safe_path_out
-        timer_done_out = game_regfiles.timer_done_out
+        //timer_done_out = game_regfiles.timer_done_out
         current_step_out = game_regfiles.current_step_out 
         
         debug = game_cu.debug
