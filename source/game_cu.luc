@@ -159,7 +159,7 @@ module game_cu (
                     game_fsm.d = GameStates.INIT_STEP
                 GameStates.INIT_STEP:
                     alufn = b011010 // "A"
-                    asel = b001 // 0
+                    asel = b001 //
                     regfile_we = 1
                     regfile_wa = d7 // current step reg
                     //decrease_timer = 1

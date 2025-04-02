@@ -1,6 +1,6 @@
 module bit_equals (
     input a[8],  
-    input binary_index[4], 
+    input binary_index[8], 
     output out[1]
 ) {
     

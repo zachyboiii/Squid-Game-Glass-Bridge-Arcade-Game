@@ -158,12 +158,6 @@
             {
                 "file": {
                     "type": "Component",
-                    "path": "Conditioning/button_conditioner.luc"
-                }
-            },
-            {
-                "file": {
-                    "type": "Component",
                     "path": "Miscellaneous/bin_to_dec.luc"
                 }
             },
@@ -194,7 +188,7 @@
             {
                 "file": {
                     "type": "DiskFile",
-                    "path": "source/seven_seg_display.luc"
+                    "path": "source/button_conditioner.luc"
                 }
             }
         ],

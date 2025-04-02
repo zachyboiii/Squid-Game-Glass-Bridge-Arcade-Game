@@ -50,11 +50,11 @@ module alu (
         
         // bit inverter
         bit_inverter.a = a[7:0]
-        bit_inverter.binary_index = b[3:0]
+        bit_inverter.binary_index = b[7:0]
         
         // bit buffer
         bit_buffer.a = a[7:0]
-        bit_buffer.binary_index = b[3:0]
+        bit_buffer.binary_index = b[7:0]
         
         
         case(alufn){
