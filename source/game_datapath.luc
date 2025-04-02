@@ -12,7 +12,7 @@ module game_datapath#(
     input rst,  // reset
 
     // output to LEDs/7-segs
-    output timer_out[16],
+    output timer_out[32],
     output left_choices_out[8],
     output right_choices_out[8],
     output safe_path_out[8],
@@ -48,6 +48,7 @@ module game_datapath#(
             .rst(rst),
             .decrease_timer(edge_detector_game_timer.out)
             
+            
         )
         
         game_regfiles game_regfiles(
@@ -67,8 +68,8 @@ module game_datapath#(
         // asel mux
         case(game_cu.asel){
             b000: input_alu_a = game_regfiles.rd1       // From regfile
-            b001: input_alu_a = 8b0  // constant 0 8b0
-            b010: input_alu_a = 8b1  // constant 1 8b1
+            b001: input_alu_a = b00000000  // constant 0 8b0
+            b010: input_alu_a = b11111111  // constant 1 8b1
             b011: input_alu_a = random.num
             b100: input_alu_a = d30 // constant 30 (0x1E) 
             
@@ -100,9 +101,9 @@ module game_datapath#(
                  timer_out = game_regfiles.timer_out
             b01: 
                 game_regfiles.data = hF // Win indiciator 
-                timer_out = d88 // Win show 88 
+                timer_out = b1011000 // Win show 88 
             b10: game_regfiles.data = d0 // Losing indicator 
-                timer_out = d00 // Lose show 00 
+                timer_out = b0000 // Lose show 00 
             default: 
                 game_regfiles.data = game_alu.out
                 timer_out = game_regfiles.timer_out

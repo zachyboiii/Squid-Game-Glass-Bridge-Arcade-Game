@@ -1,13 +1,31 @@
 module bit_equals (
-    input a[8],  // clock
-    input binary_index[4],  // reset
+    input a[8],  
+    input binary_index[4], 
     output out[1]
 ) {
-    sig i[4]
+    
     always {
 
-        i= binary_index  
-        out = a[i]
+        case(binary_index){
+            b0000:
+                out = a[0]
+            b0001:
+                out = a[1]
+            b0010:
+                out = a[2]
+            b0011:
+                out = a[3]
+            b0100:
+                out = a[4]
+            b0101:
+                out = a[5]
+            b0110:
+                out = a[6]
+            b0111:
+                out = a[7]
+            default:
+                out = 0
+        }
         
     }
 }

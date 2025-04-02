@@ -1,19 +1,38 @@
 module bit_inverter (
     input a[8],  // clock
     input binary_index[4],  // reset
-    output out[1]
+    output out[8]
 ) {
     
     
-    sig i[4]
-    
+   
+    sig modified[8]
     
     always {
+        modified = a
         
+        case(binary_index){
+            b0000:
+                modified[0] = ~a[0]
+            b0001:
+                modified[1] = ~a[1]
+            b0010:
+                modified[2] = ~a[2]
+            b0011:
+                modified[3] = ~a[3]
+            b0100:
+                modified[4] = ~a[4]
+            b0101:
+                modified[5] = ~a[5]
+            b0110:
+                modified[6] = ~a[6]
+            b0111:
+                modified[7] = ~a[7]
+            default:
+                modified[0] = 0
+        }
         
-        i= binary_index
-        
-        out = ~a[i]
+        out = modified
         
     }
 }
