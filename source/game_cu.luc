@@ -82,6 +82,7 @@ module game_cu (
                 GameStates.START:
                     if(start_btn){
                     game_fsm.d = GameStates.RANDOM_SAFE_PATH
+                    game_setup.d = 1
                     }else{
                     game_fsm.d = GameStates.START
                     }

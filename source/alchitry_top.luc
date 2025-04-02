@@ -12,7 +12,7 @@ module alchitry_top (
 ) {
     
     sig rst                 // reset signal
-    const CLK_FREQ = $is_sim() ? 100 : 100000000 // put 1000 for sim, 100M for hardware 
+    const CLK_FREQ = $is_sim() ? 1000 : 100000000 // put 1000 for sim, 100M for hardware 
     const SEVEN_SEG_DIV = $is_sim() ? 3 : 16 // put 3 for sim, 16 for hardware
     const SLOW_CLOCK_DIV = $is_sim() ? 9 : 26 // put 9 for sim, 26 for hardware 
 
@@ -91,6 +91,7 @@ module alchitry_top (
         seg.values = 4x{{4b0}} // default to all 0 first
         //seg.values = bin_to_dec_converter.digits
         //bin_to_dec_converter.value = game_datapath.current_step_out
+        
         bin_to_dec_converter.value = game_datapath.timer_out
         seg.values = bin_to_dec_converter.digits
 

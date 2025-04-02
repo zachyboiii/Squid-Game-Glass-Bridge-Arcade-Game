@@ -190,6 +190,12 @@
                     "type": "DiskFile",
                     "path": "source/game_datapath.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/seven_seg_display.luc"
+                }
             }
         ],
         "constraintFiles": [
