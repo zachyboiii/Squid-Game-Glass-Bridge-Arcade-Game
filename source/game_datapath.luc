@@ -20,6 +20,8 @@ module game_datapath#(
     output current_step_out[4],
     output debug[4]
 ) {
+    
+    
     // temp variables 
     sig input_alu_a[32]
     sig input_alu_b[32]
@@ -100,10 +102,10 @@ module game_datapath#(
                  game_regfiles.data = game_alu.out 
                  timer_out = game_regfiles.timer_out
             b01: 
-                game_regfiles.data = hF // Win indiciator 
+                game_regfiles.data = b1011000 // Win indiciator 
                 timer_out = b1011000 // Win show 88 
-            b10: game_regfiles.data = d0 // Losing indicator 
-                timer_out = b0000 // Lose show 00 
+            b10: game_regfiles.data = b00 // Losing indicator 
+                timer_out = b00 // Lose show 00
             default: 
                 game_regfiles.data = game_alu.out
                 timer_out = game_regfiles.timer_out

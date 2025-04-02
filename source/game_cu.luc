@@ -293,7 +293,7 @@ module game_cu (
                     game_fsm.d = GameStates.BRANCH_STEP
                 GameStates.BRANCH_STEP:
                     regfile_ra2 = d9
-                    if(~regfile_rd2){
+                    if(~regfile_rd2[0]){
                         game_fsm.d = GameStates.IDLE
                     }
                     else{
