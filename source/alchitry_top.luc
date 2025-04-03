@@ -54,6 +54,7 @@ module alchitry_top (
         rst = reset_cond.out    // conditioned reset
         
         led = c{3b0, io_button} // connect buttons to LEDs
+        //led = game_datapath.debug
         
         usb_tx = usb_rx         // loop serial port
         

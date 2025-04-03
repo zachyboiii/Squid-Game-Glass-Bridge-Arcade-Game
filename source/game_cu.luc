@@ -127,9 +127,9 @@ module game_cu (
                         }
                     }
                 GameStates.DIV_TIMER:
-                    alufn = b000011 // DIV
+                    alufn = b100001 // SHR
                     asel = b000 // asel input from timer reg
-                    bsel = b011 // constant 2
+                    bsel = b010 // shift by 1
                     regfile_we = 1
                     regfile_ra1 = d4 // read from timer reg
                     regfile_wa = d4 // store result back in timer reg

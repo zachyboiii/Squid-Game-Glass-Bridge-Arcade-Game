@@ -31,7 +31,7 @@ module game_datapath#(
     
 
     alu game_alu
-    pn_gen random(.clk(clk), .rst(rst))
+    //pn_gen random(.clk(clk), .rst(rst))
 
 
     .clk(clk){
@@ -66,8 +66,8 @@ module game_datapath#(
     always{
         // bootstrap rd2 output to CU for convenient branching conditions
         game_cu.regfile_rd2  = game_regfiles.rd2  
-        random.next = 1
-        random.seed = 6781203480
+        //random.next = 1
+        //random.seed = 6781203480
         
         // asel mux
         case(game_cu.asel){
@@ -75,7 +75,7 @@ module game_datapath#(
             b001: input_alu_a = b00000000  // constant 0 8b0
             b010: input_alu_a = b11111111  // constant 1 8b1
             b011:
-            input_alu_a = random.num
+            input_alu_a = b10101010
             b100: input_alu_a = d30 // constant 30 (0x1E) 
             
             default: //b10 unused
@@ -88,7 +88,7 @@ module game_datapath#(
             b001: input_alu_b = d0 // Constant 0 
             b010: input_alu_b = d1 // Constant 1 
             b011: input_alu_b = d2 // Constant 2 
-            b100: input_alu_b = d8 // Constant 8 
+            b100: input_alu_b = b1000 // Constant 8 
             default: 
                 input_alu_b = 0 
                       
