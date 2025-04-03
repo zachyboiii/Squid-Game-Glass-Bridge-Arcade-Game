@@ -66,7 +66,7 @@ module game_datapath#(
     always{
         // bootstrap rd2 output to CU for convenient branching conditions
         game_cu.regfile_rd2  = game_regfiles.rd2  
-        random.next = 0
+        random.next = 1
         random.seed = 6781203480
         
         // asel mux
@@ -75,8 +75,6 @@ module game_datapath#(
             b001: input_alu_a = b00000000  // constant 0 8b0
             b010: input_alu_a = b11111111  // constant 1 8b1
             b011:
-            random.next = 1
-            random.seed = 6781203480
             input_alu_a = random.num
             b100: input_alu_a = d30 // constant 30 (0x1E) 
             
