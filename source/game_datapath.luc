@@ -88,7 +88,7 @@ module game_datapath#(
             b001: input_alu_b = d0 // Constant 0 
             b010: input_alu_b = d1 // Constant 1 
             b011: input_alu_b = d2 // Constant 2 
-            b100: input_alu_b = b1000 // Constant 8 
+            b100: input_alu_b = d8 // Constant 8 
             default: 
                 input_alu_b = 0 
                       
@@ -105,10 +105,10 @@ module game_datapath#(
                  game_regfiles.data = game_alu.out 
                  timer_out = game_regfiles.timer_out
             b01: 
-                game_regfiles.data = b1011000 // Win indiciator 
-                timer_out = b1011000 // Win show 88 
-            b10: game_regfiles.data = b1100011 // Losing indicator 
-                timer_out = b1100011 // Lose show 00
+                game_regfiles.data = d88 // Win indiciator 
+                timer_out = d88 // Win show 88 
+            b10: game_regfiles.data = d99 // Losing indicator 
+                timer_out = d99 // Lose show 99
             default: 
                 game_regfiles.data = game_alu.out
                 timer_out = game_regfiles.timer_out

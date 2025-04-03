@@ -14,8 +14,8 @@ module game_regfiles (
   output timer_out[32],
   output left_choices_out[8],
   output right_choices_out[8],
-  output current_step_out[4]
-  //output timer_done_out
+  output current_step_out[4],
+  output step_done_out
 ) {
 
   .clk(clk) {
@@ -30,7 +30,7 @@ module game_regfiles (
       dff current_step[4](#INIT(0))      // R7
       dff temp_a[32](#INIT(0))           // R8
       dff temp_b[32](#INIT(0))           // R9
-      //dff timer_done[1](#INIT(0))        // R10 
+      dff step_done[32](#INIT(0))        // R10 
     }
   }
 
@@ -48,7 +48,7 @@ module game_regfiles (
         4b0111:  current_step.d = data[3:0];
         4b1000:  temp_a.d = data;
         4b1001:  temp_b.d = data;
-        //4b1010:  timer_done.d = data[0];
+        4b1010:  step_done.d = data;
       }
     }
 
@@ -64,7 +64,7 @@ module game_regfiles (
       4b0111:  rd1 = c{28b0, current_step.q};
       4b1000:  rd1 = temp_a.q;
       4b1001:  rd1 = temp_b.q;
-      //4b1010:  rd1 = c{31b0, timer_done.q};
+      4b1010:  rd1 = step_done.q
       default: rd1 = 32b0;
     }
 
@@ -80,7 +80,7 @@ module game_regfiles (
       4b0111:  rd2 = c{28b0, current_step.q};
       4b1000:  rd2 = temp_a.q;
       4b1001:  rd2 = temp_b.q;
-      //4b1010:  rd2 = c{31b0, timer_done.q};
+      4b1010:  rd2 = step_done.q
       default: rd2 = 32b0;
     }
 
@@ -90,6 +90,6 @@ module game_regfiles (
     left_choices_out = left_choices.q;
     right_choices_out = right_choices.q;
     current_step_out = current_step.q;
-    //timer_done_out = timer_done.q;
+    step_done_out = step_done.q;
   }
 }

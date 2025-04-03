@@ -20,6 +20,7 @@ module game_cu (
     output regfile_ra2[4],
     output regfile_we,
     output debug[4]
+    
 ) {
     enum GameStates {
         START,
@@ -68,6 +69,7 @@ module game_cu (
         wdsel = 0
         
         
+        
        
         
         debug = b0000
@@ -80,11 +82,13 @@ module game_cu (
         else{
             case(game_fsm.q){
                 GameStates.START:
+                    
                     if(start_btn){
                     game_fsm.d = GameStates.RANDOM_SAFE_PATH
                     game_setup.d = 1
                     }else{
                     game_fsm.d = GameStates.START
+                                       
                     }
                 GameStates.RANDOM_SAFE_PATH:
                     alufn = b011010 // "A"
@@ -290,26 +294,40 @@ module game_cu (
                     bsel = b100
                     regfile_we = 1
                     regfile_ra1 = d7
-                    regfile_wa = d9
+                    regfile_wa = d10
                     game_fsm.d = GameStates.BRANCH_STEP
                 GameStates.BRANCH_STEP:
-                    regfile_ra2 = d9
-                    if(~regfile_rd2[0]){
-                        game_fsm.d = GameStates.IDLE
-                    }
-                    else{
+                    regfile_ra2 = d10
+                    if(regfile_rd2[0]){
                         game_fsm.d = GameStates.WIN
                     }
+                    else{
+                        game_fsm.d = GameStates.IDLE
+                    }
                 GameStates.WIN:
+                
                     regfile_we = 1
-                    regfile_wa = d4
-                    wdsel = b01
-                    game_fsm.d = GameStates.START
+                    regfile_wa = d4  // timer reg
+                    wdsel = b01      // win indicator
+                    
+                    // NEW: Reset game_setup to re-enter setup mode when starting a new game
+                    game_setup.d = 1
+                    
+                    // Optional: Create a new state to stay in WIN until start button is pressed
+                    game_fsm.d = GameStates.WIN  // Stay in WIN state until start button
+                    
                 GameStates.LOSE:
+                
                     regfile_we = 1
-                    regfile_wa = d4
-                    wdsel = b10
-                    game_fsm.d = GameStates.START
+                    regfile_wa = d4  // timer reg
+                    wdsel = b10      // win indicator
+                    
+                    // NEW: Reset game_setup to re-enter setup mode when starting a new game
+                    game_setup.d = 1
+                    
+                    // Optional: Create a new state to stay in WIN until start button is pressed
+                    game_fsm.d = GameStates.LOSE  // Stay in LOSE state until start button
+                    
             }
            
         }
