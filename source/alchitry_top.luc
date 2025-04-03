@@ -105,6 +105,6 @@ module alchitry_top (
         io_segment = ~seg.seg // connect segments to the driver
         io_select = ~seg.sel  // connect digit select to the driver
         
-        //io_led = io_dip       // connect the DIP switches to the LEDs
+        
     }
 }

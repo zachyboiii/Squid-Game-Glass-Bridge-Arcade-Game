@@ -109,8 +109,8 @@ module game_datapath#(
             b01: 
                 game_regfiles.data = b1011000 // Win indiciator 
                 timer_out = b1011000 // Win show 88 
-            b10: game_regfiles.data = b00 // Losing indicator 
-                timer_out = b00 // Lose show 00
+            b10: game_regfiles.data = b1100011 // Losing indicator 
+                timer_out = b1100011 // Lose show 00
             default: 
                 game_regfiles.data = game_alu.out
                 timer_out = game_regfiles.timer_out

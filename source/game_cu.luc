@@ -146,7 +146,7 @@ module game_cu (
                     game_fsm.d = GameStates.INIT_LEFT
                 GameStates.INIT_LEFT:
                     alufn = b011010 // "A"
-                    asel = b001 // 8b0
+                    asel = b010 // 8b1
                     regfile_we = 1
                     regfile_wa = d5 // left choices reg
                     game_setup.d = 0
@@ -207,7 +207,7 @@ module game_cu (
                     regfile_wa = d6 // right choices reg
                     game_fsm.d = GameStates.GET_INV_BIT_R
                 GameStates.GET_INV_BIT_L:
-                    alufn = b010101 // bit buffer
+                    alufn = b101010 // bit inverter
                     asel = b000
                     bsel = b000
                     regfile_ra1 = d5 // left path reg

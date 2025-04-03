@@ -190,6 +190,12 @@
                     "type": "DiskFile",
                     "path": "source/button_conditioner.luc"
                 }
+            },
+            {
+                "file": {
+                    "type": "DiskFile",
+                    "path": "source/right_inverter.luc"
+                }
             }
         ],
         "constraintFiles": [

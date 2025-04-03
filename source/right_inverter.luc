@@ -1,4 +1,4 @@
-module bit_inverter (
+module right_inverter (
     input a[8],  // 
     input binary_index[8],  // reset
     output out[8]
