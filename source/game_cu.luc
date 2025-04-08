@@ -3,6 +3,7 @@ module game_cu (
     input rst,  // reset
     input decrease_timer,
     input regfile_rd2[32],
+    input regfile_rd1[32],
     
     input start_btn,
     input easy_btn,
@@ -19,7 +20,8 @@ module game_cu (
     output regfile_ra1[4],
     output regfile_ra2[4],
     output regfile_we,
-    output debug[4]
+    output next[1]
+    
     
 ) {
     enum GameStates {
@@ -29,17 +31,25 @@ module game_cu (
         IDLE,
         DIV_TIMER,
         MUL_TIMER,
-        INIT_LEFT,
-        INIT_RIGHT,
+        INIT_LEFT_G,
+        INIT_LEFT_R,
+        INIT_RIGHT_G,
+        INIT_RIGHT_R,
         INIT_STEP,
-        INV_LEFT,
-        INV_RIGHT,
+        INV_LEFT_G,
+        INV_LEFT_R,
+        INV_RIGHT_G,
+        INV_RIGHT_R,
         GET_INV_BIT_L,
         GET_INV_BIT_R,
         GET_SAFE_TILE_L,
         GET_SAFE_TILE_R,
         CHECK_LEFT,
         CHECK_RIGHT,
+        DISPLAY_LEFT_G,
+        DISPLAY_LEFT_R,
+        DISPLAY_RIGHT_G,
+        DISPLAY_RIGHT_R,
         BRANCH_LEFT_CORRECT,
         BRANCH_RIGHT_CORRECT,
         INC_STEP,
@@ -67,12 +77,12 @@ module game_cu (
         regfile_ra1 = d0
         regfile_ra2 = d0
         wdsel = 0
+        next = 0     
         
         
         
-       
         
-        debug = b0000
+        
         
         
         game_fsm.d = game_fsm.q
@@ -84,19 +94,23 @@ module game_cu (
                 GameStates.START:
                     
                     if(start_btn){
-                    game_fsm.d = GameStates.RANDOM_SAFE_PATH
-                    game_setup.d = 1
+                        game_fsm.d = GameStates.RANDOM_SAFE_PATH
+                        game_setup.d = 1
+                        
                     }else{
-                    game_fsm.d = GameStates.START
-                                       
+                        game_fsm.d = GameStates.START
+                        
                     }
                 GameStates.RANDOM_SAFE_PATH:
+                    next = 1
                     alufn = b011010 // "A"
                     asel = b011 // read output of random_number_generator
                     regfile_we = 1
                     regfile_wa = d0 // safe path reg
+                    
                     game_fsm.d = GameStates.SET_TIMER
                 GameStates.SET_TIMER:
+                    next = 0
                     alufn = b011010 // "A"
                     asel = b100 // constant 30
                     regfile_we = 1
@@ -107,7 +121,7 @@ module game_cu (
                     // check for difficulty button presses
                     if(game_setup.q){ 
                         if(med_btn){ 
-                            game_fsm.d = GameStates.INIT_LEFT
+                            game_fsm.d = GameStates.INIT_LEFT_G
                             game_setup.d = 0
                         } else if (hard_btn){
                             game_fsm.d = GameStates.DIV_TIMER
@@ -123,9 +137,9 @@ module game_cu (
                         if(decrease_timer){
                             game_fsm.d = GameStates.CHECK_TIMER
                         } else if(right_btn && ~left_btn){
-                            game_fsm.d = GameStates.INV_RIGHT
+                            game_fsm.d = GameStates.INV_RIGHT_G
                         } else if(left_btn && ~right_btn){
-                            game_fsm.d = GameStates.INV_LEFT
+                            game_fsm.d = GameStates.INV_LEFT_G
                         } else{
                             game_fsm.d = GameStates.IDLE
                         }
@@ -138,7 +152,7 @@ module game_cu (
                     regfile_ra1 = d4 // read from timer reg
                     regfile_wa = d4 // store result back in timer reg
                     game_setup.d = 0
-                    game_fsm.d = GameStates.INIT_LEFT
+                    game_fsm.d = GameStates.INIT_LEFT_G
                 GameStates.MUL_TIMER:
                     alufn = b000010 // MUL
                     asel = b000 // asel input from timer reg
@@ -147,35 +161,57 @@ module game_cu (
                     regfile_ra1 = d4 // read from timer reg
                     regfile_wa = d4 // store result back in timer reg
                     game_setup.d = 0
-                    game_fsm.d = GameStates.INIT_LEFT
-                GameStates.INIT_LEFT:
+                    game_fsm.d = GameStates.INIT_LEFT_G
+                GameStates.INIT_LEFT_G:
                     alufn = b011010 // "A"
                     asel = b010 // 8b1
                     regfile_we = 1
-                    regfile_wa = d5 // left choices reg
+                    regfile_wa = d5 // left choices (green) reg
                     game_setup.d = 0
-                    game_fsm.d = GameStates.INIT_RIGHT
-                GameStates.INIT_RIGHT:
+                    game_fsm.d = GameStates.INIT_LEFT_R
+                GameStates.INIT_LEFT_R:
                     alufn = b011010 // "A"
                     asel = b010 // 8b1
                     regfile_we = 1
-                    regfile_wa = d6 // right choices reg
+                    regfile_wa = d11 // left choices (red) reg
+                    game_setup.d = 0
+                    game_fsm.d = GameStates.INIT_RIGHT_G
+                GameStates.INIT_RIGHT_G:
+                    alufn = b011010 // "A"
+                    asel = b010 // 8b1
+                    regfile_we = 1
+                    regfile_wa = d6 // right choices (green) reg
+                    game_setup.d = 0
+                    game_fsm.d = GameStates.INIT_RIGHT_R
+                GameStates.INIT_RIGHT_R:
+                    alufn = b011010 // "A"
+                    asel = b010 // 8b1
+                    regfile_we = 1
+                    regfile_wa = d12 // right choices (red) reg
                     game_fsm.d = GameStates.INIT_STEP
                 GameStates.INIT_STEP:
                     alufn = b011010 // "A"
-                    asel = b001 //
+                    asel = b001 // random 
                     regfile_we = 1
                     regfile_wa = d7 // current step reg
                     //decrease_timer = 1
                     game_fsm.d = GameStates.IDLE
                 GameStates.CHECK_TIMER:
-                    alufn = b110011 // CMPEQ
+                    /*alufn = b110011 // CMPEQ
                     asel = b000 // timer reg
                     bsel = b001 // constant 0
                     regfile_we = 1 
                     regfile_ra1 = d4 // timer reg
                     regfile_wa = d8 // temp reg
-                    game_fsm.d = GameStates.BRANCH_TIMER
+                    game_fsm.d = GameStates.BRANCH_TIMER*/
+                    regfile_ra1 = d4
+                    if(regfile_rd1 == d0){
+                        game_fsm.d = GameStates.LOSE
+                    }
+                    else{
+                        game_fsm.d = GameStates.DEC_TIMER
+                    }
+                    
                 GameStates.BRANCH_TIMER:
                     regfile_ra2 = d8
                     if(~regfile_rd2[0]){ // if timer is not 0
@@ -192,23 +228,41 @@ module game_cu (
                     regfile_we = 1
                     regfile_wa = d4
                     game_fsm.d = GameStates.IDLE
-                GameStates.INV_LEFT:
+                GameStates.INV_LEFT_G:
                     alufn = b101010 // bit inverter
                     asel = b000
                     bsel = b000
-                    regfile_ra1 = d5 // left choices reg
+                    regfile_ra1 = d5 // left choices (green) reg
                     regfile_ra2 = d7 // current step reg
                     regfile_we = 1
-                    regfile_wa = d5 // left choices reg
+                    regfile_wa = d5 // left choices (green) reg
+                    game_fsm.d = GameStates.INV_LEFT_R
+                GameStates.INV_LEFT_R:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d11 // left choices (red) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d11 // left choices (red) reg
                     game_fsm.d = GameStates.GET_INV_BIT_L
-                GameStates.INV_RIGHT:
+                GameStates.INV_RIGHT_G:
                     alufn = b101010 // bit inverter
                     asel = b000
                     bsel = b000
-                    regfile_ra1 = d6 // right choices reg
+                    regfile_ra1 = d6 // right choices (green) reg
                     regfile_ra2 = d7 // current step reg
                     regfile_we = 1
-                    regfile_wa = d6 // right choices reg
+                    regfile_wa = d6 // right choices (green) reg
+                    game_fsm.d = GameStates.INV_RIGHT_R
+                GameStates.INV_RIGHT_R:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d12 // right choices (red) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d12 // right choices (red) reg
                     game_fsm.d = GameStates.GET_INV_BIT_R
                 GameStates.GET_INV_BIT_L:
                     alufn = b101010 // bit inverter
@@ -247,39 +301,94 @@ module game_cu (
                     regfile_wa = d3 // safe_path[current_step] reg
                     game_fsm.d = GameStates.CHECK_RIGHT
                 GameStates.CHECK_LEFT:
-                    alufn = b110011 // CMPEQ
+                    /*alufn = b110011 // CMPEQ
                     asel = b000
                     bsel = b000
                     regfile_ra1 = d1 // left_choice[current_step] reg
                     regfile_ra2 = d3 // safe_path[current_step] reg
                     regfile_we = 1
                     regfile_wa = d9 // temp reg
-                    game_fsm.d = GameStates.BRANCH_LEFT_CORRECT
+                    game_fsm.d = GameStates.BRANCH_LEFT_CORRECT*/
+                    regfile_ra1 = d1 // left_choice[current_step] reg
+                    regfile_ra2 = d3 // safe_path[current_step] reg
+                    if(regfile_rd2 == regfile_rd1){
+                        game_fsm.d = GameStates.DISPLAY_LEFT_G
+                    }
+                    else{
+                        game_fsm.d = GameStates.DISPLAY_LEFT_R
+                    }
+                
                 GameStates.CHECK_RIGHT:
-                    alufn = b110011 // CMPEQ
+                    /*alufn = b110011 // CMPEQ
                     asel = b000
                     bsel = b000
                     regfile_ra1 = d2 // right_choice[current_step] reg
                     regfile_ra2 = d3 // safe_path[current_step] reg
                     regfile_we = 1
                     regfile_wa = d9 // temp reg
-                    game_fsm.d = GameStates.BRANCH_RIGHT_CORRECT
+                    game_fsm.d = GameStates.BRANCH_RIGHT_CORRECT*/
+                    regfile_ra1 = d2 // right_choice[current_step] reg
+                    regfile_ra2 = d3 // safe_path[current_step] reg
+                    if(regfile_rd2 == regfile_rd1){
+                        game_fsm.d = GameStates.DISPLAY_RIGHT_G
+                    }
+                    else{
+                        game_fsm.d = GameStates.DISPLAY_RIGHT_R
+                    }
                 GameStates.BRANCH_LEFT_CORRECT:
                     regfile_ra2 = d9 // temp reg
                     if(regfile_rd2[0]){
-                        game_fsm.d = GameStates.INC_STEP
+                        game_fsm.d = GameStates.DISPLAY_LEFT_G
                     }
                     else{
-                    game_fsm.d = GameStates.INIT_LEFT
+                        game_fsm.d = GameStates.DISPLAY_LEFT_R
                     }
+                GameStates.DISPLAY_LEFT_G:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d5 // left choices (green) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d5 // left choices (green) reg
+                    game_fsm.d = GameStates.INC_STEP
+                GameStates.DISPLAY_LEFT_R:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d11 // left choices (red) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d11 // left choices (red) reg
+                    game_fsm.d = GameStates.INIT_LEFT_G
+                
                 GameStates.BRANCH_RIGHT_CORRECT:
                     regfile_ra2 = d9 // temp reg
                     if(regfile_rd2[0]){
-                        game_fsm.d = GameStates.INC_STEP
+                        game_fsm.d = GameStates.DISPLAY_RIGHT_G
                     }
                     else{
-                    game_fsm.d = GameStates.INIT_LEFT
+                        game_fsm.d = GameStates.DISPLAY_RIGHT_R
                     }
+                GameStates.DISPLAY_RIGHT_G:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d6 // right choices (green) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d6 // right choices (green) reg
+                    game_fsm.d = GameStates.INC_STEP
+                GameStates.DISPLAY_RIGHT_R:
+                    alufn = b101010 // bit inverter
+                    asel = b000
+                    bsel = b000
+                    regfile_ra1 = d12 // left choices (red) reg
+                    regfile_ra2 = d7 // current step reg
+                    regfile_we = 1
+                    regfile_wa = d12 // left choices (red) reg
+                    game_fsm.d = GameStates.INIT_LEFT_G
+                
                 GameStates.INC_STEP:
                     alufn = b000000 // ADD
                     asel = b000 // current step
@@ -289,13 +398,20 @@ module game_cu (
                     regfile_wa = d7
                     game_fsm.d = GameStates.CHECK_STEP
                 GameStates.CHECK_STEP:
-                    alufn = b110011 // CMPEQ
+                  /*  alufn = b110011 // CMPEQ
                     asel = b000
                     bsel = b100
                     regfile_we = 1
                     regfile_ra1 = d7
                     regfile_wa = d10
-                    game_fsm.d = GameStates.BRANCH_STEP
+                    game_fsm.d = GameStates.BRANCH_STEP*/                    
+                    regfile_ra2 = d7 
+                    if (regfile_rd2 == d8){
+                        game_fsm.d = GameStates.WIN 
+                    }
+                    else{
+                        game_fsm.d = GameStates.IDLE
+                    }
                 GameStates.BRANCH_STEP:
                     regfile_ra2 = d10
                     if(regfile_rd2[0]){
@@ -305,7 +421,7 @@ module game_cu (
                         game_fsm.d = GameStates.IDLE
                     }
                 GameStates.WIN:
-                
+                    
                     regfile_we = 1
                     regfile_wa = d4  // timer reg
                     wdsel = b01      // win indicator
@@ -315,9 +431,9 @@ module game_cu (
                     
                     // Optional: Create a new state to stay in WIN until start button is pressed
                     game_fsm.d = GameStates.WIN  // Stay in WIN state until start button
-                    
-                GameStates.LOSE:
                 
+                GameStates.LOSE:
+                    
                     regfile_we = 1
                     regfile_wa = d4  // timer reg
                     wdsel = b10      // win indicator
@@ -327,9 +443,9 @@ module game_cu (
                     
                     // Optional: Create a new state to stay in WIN until start button is pressed
                     game_fsm.d = GameStates.LOSE  // Stay in LOSE state until start button
-                    
+                
             }
-           
+            
         }
         
         

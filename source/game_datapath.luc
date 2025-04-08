@@ -13,12 +13,14 @@ module game_datapath#(
 
     // output to LEDs/7-segs
     output timer_out[32],
-    output left_choices_out[8],
-    output right_choices_out[8],
+    output left_choices_out_r[8],
+    output left_choices_out_g[8],
+    output right_choices_out_r[8],
+    output right_choices_out_g[8],
     output safe_path_out[8],
     //output timer_done_out, 
-    output current_step_out[4],
-    output debug[4]
+    output current_step_out[4]
+    
 ) {
     
     
@@ -66,7 +68,8 @@ module game_datapath#(
     always{
         // bootstrap rd2 output to CU for convenient branching conditions
         game_cu.regfile_rd2  = game_regfiles.rd2  
-        //random.next = 1
+        game_cu.regfile_rd1 = game_regfiles.rd1
+        //random.next = game_cu.next
         //random.seed = 6781203480
         
         // asel mux
@@ -74,8 +77,7 @@ module game_datapath#(
             b000: input_alu_a = game_regfiles.rd1       // From regfile
             b001: input_alu_a = b00000000  // constant 0 8b0
             b010: input_alu_a = b11111111  // constant 1 8b1
-            b011:
-            input_alu_a = b10101010
+            b011: input_alu_a = b10101010
             b100: input_alu_a = d30 // constant 30 (0x1E) 
             
             default: //b10 unused
@@ -117,13 +119,15 @@ module game_datapath#(
         // Wired from REG file and control unit to output ports
 
         
-        left_choices_out = game_regfiles.left_choices_out
-        right_choices_out = game_regfiles.right_choices_out
+        left_choices_out_g = game_regfiles.left_choices_out_g
+        left_choices_out_r = game_regfiles.left_choices_out_r
+        right_choices_out_g = game_regfiles.right_choices_out_g
+        right_choices_out_r = game_regfiles.right_choices_out_r
         safe_path_out = game_regfiles.safe_path_out
         //timer_done_out = game_regfiles.timer_done_out
         current_step_out = game_regfiles.current_step_out 
         
-        debug = game_cu.debug
+        
         
         
         

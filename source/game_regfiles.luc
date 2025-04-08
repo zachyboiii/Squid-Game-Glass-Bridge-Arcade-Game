@@ -1,21 +1,23 @@
 module game_regfiles (
-  input clk,
-  input rst,
-  input wa[4],
-  input we,
-  input data[32],
-  input ra1[4],
-  input ra2[4],
-  output rd1[32],
-  output rd2[32],
+    input clk,
+    input rst,
+    input wa[4],
+    input we,
+    input data[32],
+    input ra1[4],
+    input ra2[4],
+    output rd1[32],
+    output rd2[32],
 
-  // Outputs
-  output safe_path_out[8],
-  output timer_out[32],
-  output left_choices_out[8],
-  output right_choices_out[8],
-  output current_step_out[4],
-  output step_done_out[32]
+    // Outputs
+    output safe_path_out[8],
+    output timer_out[32],
+    output left_choices_out_r[8],
+    output left_choices_out_g[8],
+    output right_choices_out_r[8],
+    output right_choices_out_g[8],
+    output current_step_out[4],
+    output step_done_out[32]
 ) {
 
   .clk(clk) {
@@ -25,12 +27,14 @@ module game_regfiles (
       dff right_choice_bit[1](#INIT(0))  // R2
       dff safe_path_bit[1](#INIT(0))     // R3
       dff timer[32](#INIT(0))            // R4
-      dff left_choices[8](#INIT(0))      // R5
-      dff right_choices[8](#INIT(0))     // R6
+      dff left_choices_g[8](#INIT(0))      // R5
+      dff right_choices_g[8](#INIT(0))     // R6
       dff current_step[4](#INIT(0))      // R7
       dff temp_a[32](#INIT(0))           // R8
       dff temp_b[32](#INIT(0))           // R9
       dff step_done[1](#INIT(0))        // R10 
+      dff left_choices_r[8](#INIT(0))      // R11
+      dff right_choices_r[8](#INIT(0))     // R12
     }
   }
 
@@ -43,12 +47,14 @@ module game_regfiles (
         4b0010:  right_choice_bit.d = data[0];
         4b0011:  safe_path_bit.d = data[0];
         4b0100:  timer.d = data;
-        4b0101:  left_choices.d = data[7:0];
-        4b0110:  right_choices.d = data[7:0];
+        4b0101:  left_choices_g.d = data[7:0];
+        4b0110:  right_choices_g.d = data[7:0];
         4b0111:  current_step.d = data[3:0];
         4b1000:  temp_a.d = data;
         4b1001:  temp_b.d = data;
         4b1010:  step_done.d = data[0];
+        4b1011:  left_choices_r.d = data[7:0];
+        4b1100:  right_choices_r.d = data[7:0];
       }
     }
 
@@ -59,12 +65,14 @@ module game_regfiles (
       4b0010:  rd1 = c{31b0, right_choice_bit.q};
       4b0011:  rd1 = c{31b0, safe_path_bit.q};
       4b0100:  rd1 = timer.q;
-      4b0101:  rd1 = c{24b0, left_choices.q};
-      4b0110:  rd1 = c{24b0, right_choices.q};
+      4b0101:  rd1 = c{24b0, left_choices_g.q};
+      4b0110:  rd1 = c{24b0, right_choices_g.q};
       4b0111:  rd1 = c{28b0, current_step.q};
       4b1000:  rd1 = temp_a.q;
       4b1001:  rd1 = temp_b.q;
       4b1010:  rd1 = c{31b0,step_done.q}
+      4b1011:  rd1 = c{24b0, left_choices_r.q};
+      4b1100:  rd1 = c{24b0, right_choices_r.q};
       default: rd1 = 32b0;
     }
 
@@ -75,20 +83,24 @@ module game_regfiles (
       4b0010:  rd2 = c{31b0, right_choice_bit.q};
       4b0011:  rd2 = c{31b0, safe_path_bit.q};
       4b0100:  rd2 = timer.q;
-      4b0101:  rd2 = c{24b0, left_choices.q};
-      4b0110:  rd2 = c{24b0, right_choices.q};
+      4b0101:  rd2 = c{24b0, left_choices_g.q};
+      4b0110:  rd2 = c{24b0, right_choices_g.q};
       4b0111:  rd2 = c{28b0, current_step.q};
       4b1000:  rd2 = temp_a.q;
       4b1001:  rd2 = temp_b.q;
       4b1010:  rd2 = c{31b0,step_done.q}
+      4b1011:  rd2 = c{24b0, left_choices_r.q};
+      4b1100:  rd2 = c{24b0, right_choices_r.q};
       default: rd2 = 32b0;
     }
 
     // Output assignments
     safe_path_out = safe_path.q;
     timer_out = timer.q;
-    left_choices_out = left_choices.q;
-    right_choices_out = right_choices.q;
+    left_choices_out_g = left_choices_g.q;
+    left_choices_out_r = left_choices_r.q;
+    right_choices_out_g = right_choices_g.q;
+    right_choices_out_r = right_choices_r.q;
     current_step_out = current_step.q;
     step_done_out = step_done.q;
   }

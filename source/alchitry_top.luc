@@ -12,7 +12,7 @@ module alchitry_top (
 ) {
     
     sig rst                 // reset signal
-    const CLK_FREQ = $is_sim() ? 1000 : 10000000 // put 1000 for sim, 10M for hardware 
+    const CLK_FREQ = $is_sim() ? 1000 : 10000000 // put 1000 for sim, 100M for hardware 
     const SEVEN_SEG_DIV = $is_sim() ? 3 : 16 // put 3 for sim, 16 for hardware
     const SLOW_CLOCK_DIV = $is_sim() ? 9 : 26 // put 9 for sim, 26 for hardware 
 
@@ -62,12 +62,12 @@ module alchitry_top (
         io_segment = 8hff          // turn segments off
         io_select = 4hf           // select no digits
         
-        btn_cond_start_btn.in = io_dip[0][0]
-        btn_cond_easy_btn.in = io_button[0]
+        btn_cond_start_btn.in = io_dip[0][7]
+        btn_cond_easy_btn.in = io_dip[1][4]
         btn_cond_med_btn.in = io_button[1]
         btn_cond_hard_btn.in = io_button[2]
         btn_cond_left_btn.in = io_button[3]
-        btn_cond_right_btn.in = io_button[4] 
+        btn_cond_right_btn.in = io_button[4]
         
         edge_dt_start_btn.in = btn_cond_start_btn.out 
         edge_dt_easy_btn.in = btn_cond_easy_btn.out 
@@ -83,9 +83,7 @@ module alchitry_top (
         game_datapath.left_btn = edge_dt_left_btn.out
         game_datapath.right_btn = edge_dt_right_btn.out
                 
-        //edge_detector.in = ctr.value
-        //dec_ctr.inc = edge_detector.out
-        //seg.values = dec_ctr.digits
+        
         
         
         //Updating 7 Segments
@@ -97,10 +95,11 @@ module alchitry_top (
         seg.values = bin_to_dec_converter.digits
 
       
-        io_led[2] = game_datapath.left_choices_out
-        io_led[1] = game_datapath.right_choices_out
-        io_led[0] = game_datapath.current_step_out
-        led = game_datapath.safe_path_out
+        io_led[2] = game_datapath.left_choices_out_g
+        io_led[1] = game_datapath.left_choices_out_r
+        io_led[0] = game_datapath.right_choices_out_g
+        led = game_datapath.right_choices_out_r
+        
 
         
         io_segment = ~seg.seg // connect segments to the driver
