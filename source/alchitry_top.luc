@@ -95,14 +95,14 @@ module alchitry_top (
         seg.values = bin_to_dec_converter.digits
 
       
-        io_led[2] = game_datapath.left_choices_out_g
-        io_led[1] = game_datapath.left_choices_out_r
-        io_led[0] = game_datapath.right_choices_out_g
-        led = game_datapath.right_choices_out_r
+        io_led[2] = game_datapath.right_choices_out_g
+        io_led[1] = game_datapath.right_choices_out_r
+        io_led[0] = game_datapath.left_choices_out_g
+        led = game_datapath.left_choices_out_r
         
 
         
-        io_segment = ~seg.seg // connect segments to the driver
+        io_segment = seg.seg // connect segments to the driver
         io_select = ~seg.sel  // connect digit select to the driver
         
         

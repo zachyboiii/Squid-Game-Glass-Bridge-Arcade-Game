@@ -7,6 +7,7 @@ PINOUT(V1), STANDARD(LVCMOS33) {
     pin io_led[0][5] B14
     pin io_led[0][6] B12
     pin io_led[0][7] B11
+    
     pin io_led[1][0] B9
     pin io_led[1][1] B8
     pin io_led[1][2] B6

@@ -94,6 +94,7 @@ module game_cu (
                 GameStates.START:
                     
                     if(start_btn){
+                        next = 1
                         game_fsm.d = GameStates.RANDOM_SAFE_PATH
                         game_setup.d = 1
                         
@@ -102,7 +103,7 @@ module game_cu (
                         
                     }
                 GameStates.RANDOM_SAFE_PATH:
-                    next = 1
+                    
                     alufn = b011010 // "A"
                     asel = b011 // read output of random_number_generator
                     regfile_we = 1
