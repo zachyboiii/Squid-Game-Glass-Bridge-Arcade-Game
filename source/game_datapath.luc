@@ -70,7 +70,7 @@ module game_datapath#(
         game_cu.regfile_rd2  = game_regfiles.rd2  
         game_cu.regfile_rd1 = game_regfiles.rd1
         random.next = game_cu.next
-        random.seed = 6781203480
+        random.seed = 6749859481
         
         // asel mux
         case(game_cu.asel){
